@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net"
+	"strings"
 )
 
 const (
@@ -39,6 +40,12 @@ func createMessage(Text string, Client Client, Type MessageType) Message {
 	}
 }
 
+func getTrimmedText(text string) string {
+	text = strings.TrimRight(text, "\n")
+	text = strings.TrimRight(text, "\r")
+	return text
+}
+
 func handleConnection(conn net.Conn, messages chan Message) {
 	defer conn.Close()
 	readBuffer := make([]byte, 512)
@@ -61,9 +68,11 @@ func handleConnection(conn net.Conn, messages chan Message) {
 		Conn: conn,
 	}
 
+	broadcastMsg := "------ " + getTrimmedText(name) + " joined the server ------\n"
 	messages <- Message{
 		Type:   ClientConnected,
 		Client: newClient,
+		Text:   broadcastMsg,
 	}
 
 	for {
@@ -77,24 +86,30 @@ func handleConnection(conn net.Conn, messages chan Message) {
 	}
 }
 
+func broadcastMessageToUsers(msg Message, broadcastMsg string) {
+	for k, client := range clients {
+		if k != msg.Client.Name {
+			_, err := client.Conn.Write([]byte(broadcastMsg))
+			if err != nil {
+				log.Printf("Oops!!! could not send message to %s: %s", client.Name, err)
+			}
+		}
+	}
+}
+
 func chatServer(messages chan Message) {
 	for {
 		msg := <-messages
 		switch msg.Type {
 		case ClientConnected:
 			clients[msg.Client.Name] = msg.Client
+			broadcastMessageToUsers(msg, msg.Text)
 		case ClientDisconnected:
 			delete(clients, msg.Client.Name)
 		case NewMessage:
-			for k, client := range clients {
-				if k != msg.Client.Name {
-					message := "-----\n" + msg.Client.Name + "sent: " + msg.Text + "-----\n"
-					_, err := client.Conn.Write([]byte(message))
-					if err != nil {
-						log.Printf("Oops!!! could not send message to %s: %s", client.Name, err)
-					}
-				}
-			}
+			name := getTrimmedText(msg.Client.Name)
+			broadcastMsg := "\n" + name + " sent: " + msg.Text + "\n"
+			broadcastMessageToUsers(msg, broadcastMsg)
 		}
 
 	}
