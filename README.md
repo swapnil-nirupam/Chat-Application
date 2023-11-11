@@ -4,6 +4,9 @@ This is simple chat application which broadcasts message to all the connected cl
 # To get started - 
 
 Clone the repo 
+
 Install go on your machine 
+
 Run go run main.go in project directory your server is ready..
+
 Open multiple terminals and connect with the server using telnet on the specified port
