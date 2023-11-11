@@ -108,7 +108,11 @@ func chatServer(messages chan Message) {
 			delete(clients, msg.Client.Name)
 		case NewMessage:
 			name := getTrimmedText(msg.Client.Name)
-			broadcastMsg := "\n" + name + " sent: " + msg.Text + "\n"
+			serparator := "######"
+			for range name {
+				serparator = serparator + "#"
+			}
+			broadcastMsg := serparator + "\n" + name + " sent: " + msg.Text + serparator + "\n"
 			broadcastMessageToUsers(msg, broadcastMsg)
 		}
 
