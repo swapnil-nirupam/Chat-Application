@@ -7,6 +7,6 @@ Clone the repo
 
 Install go on your machine 
 
-Run go run main.go in project directory your server is ready..
+Run __go run main.go__ in project directory your server is ready..
 
 Open multiple terminals and connect with the server using telnet on the specified port
