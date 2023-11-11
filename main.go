@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	PORT             = "6969"
+	PORT             = "8181"
 	DELAY_IN_SECONDS = 10
 )
 
